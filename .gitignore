@@ -17,6 +17,8 @@ env/
 # Data (use .gitkeep to preserve directory)
 data/*
 !data/.gitkeep
+!data/sample_crops/
+!data/output/
 
 # Model weights
 *.pt
@@ -34,3 +36,5 @@ Thumbs.db
 # IDE
 .vscode/
 .idea/
+results/*
+!results/.gitkeep
