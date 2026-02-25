@@ -1,19 +1,16 @@
-# Core
-torch>=2.0.0
-torchvision>=0.15.0
-transformers>=4.35.0
-
-# SAM3
-segment-anything-3  # or install from HuggingFace
-
+# PrimateReID dependencies
+# Detection
+ultralytics>=8.0        # YOLOv8+
+# Embedding
+facenet-pytorch>=2.5
 # Image processing
-opencv-python>=4.8.0
-Pillow>=10.0.0
-numpy>=1.24.0
-
-# Visualization
-matplotlib>=3.7.0
-
-# Notebooks
-jupyter>=1.0.0
-ipywidgets>=8.0.0
+opencv-python>=4.8
+Pillow>=10.0
+# ML framework
+torch>=2.0
+torchvision>=0.15
+# Config
+pyyaml>=6.0
+# Utilities
+numpy>=1.24
+tqdm>=4.65

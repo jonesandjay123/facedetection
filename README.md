@@ -1,99 +1,83 @@
-# Monkey Face Detection with SAM3
+# PrimateReID
 
-Detecting and distinguishing individual monkey faces in images using Meta's **Segment Anything Model 3 (SAM3)**, while filtering out human faces.
+End-to-end pipeline for primate face detection, cropping, and individual re-identification.
 
-## Project Goal
+> **[繁體中文版 README](README.zh-TW.md)**
 
-Given an image containing multiple faces (both monkey and human):
-1. **Detect all monkey faces** in the image
-2. **Distinguish between different individual monkeys** (not just "there's a monkey")
-3. **Exclude human faces** from results
+## Architecture
 
-## Background
+```
+Raw Photo → Detection (YOLO/SAM3) → Crop (box/mask) → Embedding (FaceNet/ArcFace/primate) → ReID Evaluation
+```
 
-This project explores whether SAM3's zero-shot segmentation capabilities can be adapted for **primate face detection** — specifically for research scenarios where multiple macaques need to be individually identified in field or lab photographs.
+**PrimateReID** handles the full pipeline from raw field photos to individual identification. For threshold analysis and evaluation metrics, it integrates with [FaceThresholdLab](https://github.com/jonesandjay123/FaceThresholdLab) as the evaluation engine.
 
-## Tech Stack
+## Pipeline Components
 
-- **Model**: [SAM3 (Segment Anything Model 3)](https://huggingface.co/facebook/sam3) — Meta's latest segmentation model
-- **Language**: Python 3.10+
-- **Framework**: PyTorch + HuggingFace Transformers
-- **Additional**: OpenCV for image processing
+### Detection
+Front-end face/body detection using YOLO or SAM3. Locates primate subjects in raw photographs.
+
+### Cropping
+Extracts individual primate regions via bounding-box crop or mask-based crop, preparing clean inputs for embedding.
+
+### Embedding
+Generates identity-discriminative feature vectors using multiple backbones — FaceNet, ArcFace, or primate-specific models.
+
+### Evaluation
+Feeds embeddings into [FaceThresholdLab](https://github.com/jonesandjay123/FaceThresholdLab) for distance-based analysis, threshold tuning, and re-identification accuracy reporting.
+
+## Status
+
+**Early Development** — Phase 1 detection comparison (SAM3 vs YOLO) completed. Pipeline integration in progress.
+
+### Phase 1: SAM3 Detection Results
+
+Eleane conducted SAM3 zero-shot detection experiments across three scenarios:
+
+| Scenario | Condition | Finding |
+|----------|-----------|---------|
+| S1 | Single monkey, clean background | Good segmentation quality |
+| S2 | Multiple monkeys, moderate occlusion | Acceptable detection, some missed faces |
+| S3 | Field conditions (mixed species, clutter) | Prompt engineering alone insufficient for reliable detection |
+
+These results informed the decision to adopt a multi-stage pipeline with dedicated detectors. Full exploration preserved in [`archive/sam3-exploration/`](archive/sam3-exploration/).
 
 ## Project Structure
 
 ```
-facedetection/
-├── README.md
-├── requirements.txt
-├── src/
-│   ├── __init__.py
-│   ├── detector.py          # Core detection pipeline
-│   ├── sam3_wrapper.py      # SAM3 model loading & inference
-│   ├── face_filter.py       # Human vs monkey face classification
-│   └── visualizer.py        # Result visualization & annotation
-├── notebooks/
-│   └── exploration.ipynb    # Interactive exploration & experiments
-├── data/
-│   ├── sample/              # Sample test images
-│   └── output/              # Detection results
-├── tests/
-│   └── test_detector.py
-└── docs/
-    └── research_notes.md    # Findings, limitations, alternatives
+PrimateReID/
+├── src/primateid/        # Core pipeline modules
+│   ├── detection/        # YOLO, SAM3 detection front-ends
+│   ├── cropping/         # Box crop, mask crop
+│   ├── embedding/        # FaceNet, ArcFace, primate models
+│   ├── evaluation/       # FaceThresholdLab integration
+│   └── utils/
+├── configs/              # Experiment configuration (YAML)
+├── data/                 # Test data (gitignored)
+├── results/              # Experiment outputs
+├── archive/              # Phase 1 SAM3 exploration (preserved)
+└── tests/
 ```
 
-## Getting Started
+## Quick Start
 
 ```bash
-# Clone
-git clone https://github.com/jonesandjay123/facedetection.git
-cd facedetection
-
-# Install dependencies
+git clone https://github.com/jonesandjay123/PrimateReID.git
+cd PrimateReID
 pip install -r requirements.txt
-
-# Run detection on a sample image
-python -m src.detector --input data/sample/test.jpg --output data/output/
+# Pipeline usage — coming soon
 ```
 
-## Research Questions
+## Related Repos
 
-1. Can SAM3 segment monkey faces with zero-shot prompting (no fine-tuning)?
-2. How well does it distinguish between individual monkeys vs. just detecting "monkey"?
-3. What prompt engineering strategies work best for primate face segmentation?
-4. How does it compare to traditional face detection (MTCNN, RetinaFace) + classification pipelines?
+- [FaceThresholdLab](https://github.com/jonesandjay123/FaceThresholdLab) — Evaluation engine for face embedding analysis
+- [FacialRecognitionTest](https://github.com/jonesandjay123/FacialRecognitionTest) — Earlier facial recognition experiments
 
-## Approach
+## Contributors
 
-### Phase 1: SAM3 Exploration
-- Load SAM3 from HuggingFace
-- Test zero-shot segmentation on monkey images
-- Evaluate segmentation quality for faces specifically
-
-### Phase 2: Face Filtering
-- Integrate a lightweight classifier to separate monkey vs human faces
-- Options: fine-tuned ResNet, CLIP zero-shot, or custom CNN
-
-### Phase 3: Individual Identification
-- Explore embedding-based approaches for individual monkey recognition
-- Compare SAM3 embeddings vs dedicated face recognition models
-
-## Alternative Models to Explore
-
-| Model | Source | Strength |
-|-------|--------|----------|
-| SAM3 | Meta/HuggingFace | Zero-shot segmentation |
-| SAM2 | Meta | Video segmentation |
-| YOLOv8-face | Ultralytics | Fast face detection |
-| CLIP | OpenAI | Zero-shot classification |
-| DINOv2 | Meta | Visual feature extraction |
+- **Jones** — Project lead, pipeline architecture
+- **Eleane (趙以琳)** — SAM3 detection research, field testing
 
 ## License
 
 MIT
-
-## Contributors
-
-- Jones — Project lead
-- Eleane (趙以琳) — Research collaboration

@@ -1,0 +1,21 @@
+# PrimateReID experiment configuration example
+
+detection:
+  model: yolov8n       # yolov8n, yolov8s, sam3
+  confidence: 0.5
+  input_dir: data/images/
+
+cropping:
+  method: box           # box, mask
+  padding: 0.1          # relative padding around detection
+
+embedding:
+  backbone: facenet     # facenet, arcface
+  output_dim: 512
+
+evaluation:
+  threshold_range: [0.3, 1.2]
+  step: 0.05
+
+output:
+  results_dir: results/
