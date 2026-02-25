@@ -19,6 +19,7 @@ data/*
 !data/.gitkeep
 !data/sample_crops/
 !data/output/
+!data/chimp_crops/
 
 # Model weights
 *.pt
