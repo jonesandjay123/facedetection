@@ -158,10 +158,10 @@ Tested on `data/demo_chimp_crops/` — 10 chimpanzees × 30 face crops (300 imag
 |----------|----------|-----|-----|----|---------|
 | **DINOv2** ⭐ | Self-supervised (LVD-142M) | **0.725** | **34.7%** | **0.80** | Best — no labels needed |
 | ResNet50 | Supervised (ImageNet) | 0.688 | 36.3% | 0.67 | Generic features, decent |
+| ArcFace | Human faces (MS1MV2) | 0.640 | 40.2% | 0.51 | Metric learning helps, still human-biased |
 | FaceNet | Human faces (VGGFace2) | 0.614 | 42.2% | 0.41 | Over-specialized for humans |
-| ArcFace | Human faces (MS1MV2) | 0.551 | 45.4% | 0.16 | Too human-specific, near random |
 
-**Key finding**: Human face models (FaceNet, ArcFace) perform *worse* than general-purpose models on primate faces. Self-supervised learning (DINOv2) generalizes best across species — learned visual features without human-specific bias.
+**Key finding**: Human face models (FaceNet, ArcFace) perform *worse* than general-purpose models on primate faces. Self-supervised learning (DINOv2) generalizes best across species — learned visual features without human-specific bias. ArcFace's metric learning (angular margin) helps vs FaceNet, but still can't beat label-free DINOv2.
 
 See [docs/baseline-results.md](docs/baseline-results.md) for full analysis, additional backbone candidates, and next steps.
 
