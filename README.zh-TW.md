@@ -18,15 +18,35 @@
 git clone https://github.com/jonesandjay123/PrimateReID.git
 cd PrimateReID
 pip install -r requirements.txt
+```
 
-# 產生範例測試資料
+### 方案 A：使用內附的真實黑猩猩測試資料
+
+Repo 內附 `data/demo_chimp_crops/` — 10 隻黑猩猩 × 30 張裁切臉部照片（共 300 張，約 22MB），來自 CTai/CZoo 資料集，clone 後即可直接測試：
+
+```bash
+# ResNet50 骨幹網路
+PYTHONPATH=src python3 -m primateid.run --crops data/demo_chimp_crops --backbone resnet50
+
+# FaceNet 骨幹網路
+PYTHONPATH=src python3 -m primateid.run --crops data/demo_chimp_crops --backbone facenet
+```
+
+### 方案 B：使用合成測試資料
+
+```bash
+# 產生隨機測試圖片（不需額外下載）
 python3 scripts/generate_sample_data.py
 
-# 使用 ResNet50 骨幹網路執行評估
 PYTHONPATH=src python3 -m primateid.run --crops data/sample_crops --backbone resnet50
+```
 
-# 或使用 FaceNet 骨幹網路
-PYTHONPATH=src python3 -m primateid.run --crops data/sample_crops --backbone facenet
+### 方案 C：使用自己的資料
+
+將裁切好的圖片放進 `data/你的資料集/<個體名稱>/` 資料夾（參考下方[資料格式](#資料格式)），然後：
+
+```bash
+PYTHONPATH=src python3 -m primateid.run --crops data/your_dataset --backbone resnet50
 ```
 
 ### CLI 選項
@@ -106,6 +126,17 @@ PrimateReID/
 ├── results/              # 實驗結果輸出
 └── tests/
 ```
+
+## 測試資料
+
+Repo 內附兩組測試資料：
+
+| 資料集 | 路徑 | 說明 |
+|--------|------|------|
+| **黑猩猩 Demo** | `data/demo_chimp_crops/` | 10 隻個體 × 30 張真實臉部裁切，來自 CTai/CZoo（約 22MB） |
+| **合成範例** | `data/sample_crops/` | 由 `scripts/generate_sample_data.py` 產生（隨機雜訊，用於 CI/冒煙測試） |
+
+黑猩猩 Demo 資料讓你 clone 後馬上可以跑，不需要額外下載任何東西。
 
 ## 目前狀態
 

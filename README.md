@@ -18,15 +18,35 @@ Raw Photo → Detection (YOLO/SAM3) → Crop (box/mask) → Embedding (FaceNet/A
 git clone https://github.com/jonesandjay123/PrimateReID.git
 cd PrimateReID
 pip install -r requirements.txt
+```
 
-# Generate sample test data
+### Option A: Run with included demo data (real chimpanzee faces)
+
+The repo includes `data/demo_chimp_crops/` — 10 chimpanzees × 30 cropped face photos (300 images, ~22MB) from the CTai/CZoo dataset, ready to test out of the box:
+
+```bash
+# ResNet50 backbone
+PYTHONPATH=src python3 -m primateid.run --crops data/demo_chimp_crops --backbone resnet50
+
+# FaceNet backbone
+PYTHONPATH=src python3 -m primateid.run --crops data/demo_chimp_crops --backbone facenet
+```
+
+### Option B: Run with synthetic sample data
+
+```bash
+# Generate random test images (no download needed)
 python3 scripts/generate_sample_data.py
 
-# Run evaluation with ResNet50 backbone
 PYTHONPATH=src python3 -m primateid.run --crops data/sample_crops --backbone resnet50
+```
 
-# Or with FaceNet backbone
-PYTHONPATH=src python3 -m primateid.run --crops data/sample_crops --backbone facenet
+### Option C: Run with your own data
+
+Organise your cropped images into `data/your_dataset/<individual_name>/` folders (see [Data Format](#data-format) below), then:
+
+```bash
+PYTHONPATH=src python3 -m primateid.run --crops data/your_dataset --backbone resnet50
 ```
 
 ### CLI Options
@@ -106,6 +126,17 @@ PrimateReID/
 ├── results/              # Experiment outputs
 └── tests/
 ```
+
+## Demo Data
+
+The repo ships with two test datasets:
+
+| Dataset | Path | Description |
+|---------|------|-------------|
+| **Demo chimpanzees** | `data/demo_chimp_crops/` | 10 individuals × 30 real face crops from CTai/CZoo (~22MB) |
+| **Synthetic samples** | `data/sample_crops/` | Generated via `scripts/generate_sample_data.py` (random noise, for CI/smoke tests) |
+
+The demo chimpanzee data is provided for quick evaluation — clone the repo and run immediately, no extra downloads needed.
 
 ## Status
 
