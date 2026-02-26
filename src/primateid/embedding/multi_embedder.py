@@ -100,7 +100,7 @@ class MultiEmbedder:
         import onnxruntime  # noqa: F401 — ensure available
 
         # Download buffalo_l if needed, then load ONLY the recognition model
-        model_dir = ensure_available("buffalo_l")
+        model_dir = ensure_available("models", "buffalo_l")
         import os
         rec_path = os.path.join(model_dir, "w600k_r50.onnx")
         self._arcface_rec = get_model(rec_path, providers=["CPUExecutionProvider"])
