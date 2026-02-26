@@ -142,6 +142,15 @@ Repo 內附兩組測試資料：
 
 **v0.1** — 嵌入 pipeline + 評估 + CLI 已可運作。偵測與裁切模組開發中。
 
+### 基線結果（2026-02-25）
+
+| 骨幹網路 | AUC | EER | d' |
+|----------|-----|-----|-----|
+| ResNet50（ImageNet）| 0.688 | 36.3% | 0.67 |
+| FaceNet（VGGFace2）| 0.614 | 42.2% | 0.41 |
+
+兩個通用模型在靈長類個體辨識上都表現不佳 — 驗證了領域專用嵌入模型的必要性。完整分析、候選骨幹（ArcFace、DINOv2、CLIP、SphereFace）與下一步計畫見 [docs/baseline-results.zh-TW.md](docs/baseline-results.zh-TW.md)。
+
 ## 相關專案
 
 - [FaceThresholdLab](https://github.com/jonesandjay123/FaceThresholdLab) — 臉部嵌入分析的評估引擎

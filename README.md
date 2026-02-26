@@ -142,6 +142,15 @@ The demo chimpanzee data is provided for quick evaluation — clone the repo and
 
 **v0.1** — Embedding pipeline + evaluation + CLI operational. Detection and cropping modules in progress.
 
+### Baseline Results (2026-02-25)
+
+| Backbone | AUC | EER | d' |
+|----------|-----|-----|-----|
+| ResNet50 (ImageNet) | 0.688 | 36.3% | 0.67 |
+| FaceNet (VGGFace2) | 0.614 | 42.2% | 0.41 |
+
+Both general-purpose models perform poorly on primate individual identification — validating the need for domain-specific embeddings. See [docs/baseline-results.md](docs/baseline-results.md) for full analysis, backbone candidates (ArcFace, DINOv2, CLIP, SphereFace), and next steps.
+
 ## Related Repos
 
 - [FaceThresholdLab](https://github.com/jonesandjay123/FaceThresholdLab) — Evaluation engine for face embedding analysis

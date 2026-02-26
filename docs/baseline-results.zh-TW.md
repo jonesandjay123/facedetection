@@ -1,0 +1,96 @@
+# 基線結果與骨幹網路研究
+
+> 日期：2026-02-25 | 資料集：demo_chimp_crops（10 隻黑猩猩 × 30 張裁切照）
+
+## 基線結果
+
+| 骨幹網路 | AUC | EER | d'（可分辨度）| 最佳閾值 |
+|----------|-----|-----|-----------:|----------|
+| **ResNet50**（ImageNet）| 0.6884 | 36.3% | 0.673 | 0.624 |
+| **FaceNet**（VGGFace2）| 0.6141 | 42.2% | 0.407 | 0.751 |
+
+### 結果解讀
+
+- **兩個模型都表現不佳** — 接近隨機猜測（AUC=0.5），無法有效辨識個別黑猩猩
+- **ResNet50 > FaceNet**：看似反直覺但可以解釋 — FaceNet 過度專精於人類臉部幾何特徵（瞳距、鼻樑、嘴型），這些特徵轉移到猩猩臉上反而產生偏差。ResNet50 的通用視覺特徵（紋理、顏色分佈、形狀）在猩猩上反而更穩定
+- **分數分佈嚴重重疊**（見圖表），確認辨別力極低
+- **這些結果建立了清楚的基線**，領域專用模型應該能大幅超越
+
+### 核心洞察
+
+「類別辨識」（這是不是黑猩猩？）和「個體辨識」（這是 Fredy 還是 Victor？）之間的鴻溝，需要通用模型學不到的「身份鑑別特徵」。這驗證了靈長類專用或微調嵌入模型的必要性。
+
+---
+
+## 骨幹網路候選方案
+
+### 第一梯隊：可直接整合（有預訓練權重）
+
+| 模型 | 來源 | 嵌入維度 | 訓練資料 | 預期效果 |
+|------|------|---------|---------|---------|
+| **ArcFace (InsightFace)** | [deepinsight/insightface](https://github.com/deepinsight/insightface) | 512 | MS1MV2（人臉）| 更優的度量學習損失；更好的類內緊湊度 |
+| **SphereFace** | [clcarwin/sphereface_pytorch](https://github.com/clcarwin/sphereface_pytorch) | 512 | CASIA-WebFace | 角度間距；Deb 2018 曾用於狐猴 ReID |
+| **DINOv2** | [facebookresearch/dinov2](https://github.com/facebookresearch/dinov2) | 768/1024 | LVD-142M（多樣）| 自監督學習；在無標籤的細粒度任務上表現強 |
+| **CLIP (ViT-B/16)** | [openai/clip](https://github.com/openai/CLIP) | 512 | 4 億圖文配對 | 零樣本泛化；視覺-語言對齊 |
+
+### 第二梯隊：需要微調（對靈長類 ReID 最有潛力）
+
+| 方法 | 說明 | 關鍵論文 |
+|------|------|---------|
+| **ArcFace 微調靈長類臉** | 從人臉權重開始，用 CTai/CZoo 微調 | Deb et al. 2018 |
+| **PrimNet** | 靈長類專用網路 | Freytag et al. GCPR 2016 |
+| **Log-Euclidean CNN** | 協方差特徵用於靈長類身份 | Freytag et al. GCPR 2016 |
+| **Triplet Loss 微調** | 任何骨幹 + 三元組/對比損失 | 標準度量學習 |
+
+### 第三梯隊：研究前沿
+
+| 方法 | 說明 |
+|------|------|
+| **MegaDescriptor** | 動物再辨識基礎模型（WildlifeDatasets 專案）|
+| **SAM3 + embedding** | 開放詞彙偵測 → 裁切 → 微調嵌入 |
+| **自監督預訓練** | DINO/MAE 在無標籤靈長類照片上預訓練 → 微調 |
+
+---
+
+## 建議下一步
+
+### 階段一：快速驗證（不需訓練）
+
+1. **加入 ArcFace** — InsightFace 提供 ONNX 模型，容易載入
+2. **加入 DINOv2** — 自監督特徵；在新領域可能比監督式 ImageNet 更好
+3. **加入 CLIP** — 強零樣本泛化能力
+4. 在 demo_chimp_crops 重新跑評估 → 5 種骨幹橫向比較
+
+### 階段二：微調（需要 GPU）
+
+5. **用完整 CTai/CZoo 微調 ArcFace**（7,187 張，86 隻個體）
+   - 使用 annotation 分 train/test
+   - ArcFace loss + 黑猩猩身份標籤
+   - 預期：大幅提升（文獻報告微調後 >90% 準確率）
+6. **Triplet loss 訓練**作為替代方案
+
+### 階段三：跨物種泛化
+
+7. 用微調後的黑猩猩模型測試其他靈長類（紅毛猩猩、獼猴）
+8. 研究 domain adaptation / few-shot learning 用於新物種
+
+---
+
+## 資料來源
+
+Demo 黑猩猩裁切來自 **CTai/CZoo 資料集**（Freytag et al.）：
+
+- **論文**：Chimpanzee Faces in the Wild: Log-Euclidean CNNs for Predicting Identities and Attributes of Primates (GCPR 2016)
+- **倉庫**：[cvjena/chimpanzee_faces](https://github.com/cvjena/chimpanzee_faces)
+- **完整資料集**：7,187 張裁切臉部照片、86 隻個體，含身份/性別/年齡標註
+- **授權**：非商業研究用途
+
+---
+
+## 參考文獻
+
+1. Freytag, A. et al. "Chimpanzee Faces in the Wild: Log-Euclidean CNNs for Predicting Identities and Attributes of Primates." GCPR 2016.
+2. Deb, D. et al. "Face Recognition: Primates in the Wild." IEEE BTAS 2018.
+3. Guan, Y. et al. "Face recognition of a Lorisidae species based on computer vision." Global Ecology and Conservation, 2023.
+4. Deng, J. et al. "ArcFace: Additive Angular Margin Loss for Deep Face Recognition." CVPR 2019.
+5. Oquab, M. et al. "DINOv2: Learning Robust Visual Features without Supervision." 2023.
