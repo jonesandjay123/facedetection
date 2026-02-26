@@ -4,6 +4,8 @@ torch>=2.0
 torchvision>=0.15
 # Embedding
 facenet-pytorch>=2.5
+insightface>=0.7
+onnxruntime>=1.16
 # Image processing
 Pillow>=11.0
 opencv-python>=4.8
