@@ -37,6 +37,13 @@ Optional but valuable:
 - [ ] Triplet loss training as alternative approach
 - [ ] Cross-species evaluation: chimp model → macaque/orangutan
 
+## Quality Assurance: Multi-AI Code Review
+
+- [ ] **Let different AI agents review this repo independently** to catch blind spots
+  - Gemini Pro 3.1 / Codex 5.3 / GPT / others
+  - Check: code correctness, evaluation methodology, statistical validity, best practices
+  - Avoid single-AI echo chamber (all code so far written by Claude Opus 4.6)
+
 ## Research Questions
 
 1. **Does metric learning (ArcFace) help cross-species?** — Human face weights with angular margin vs generic features
