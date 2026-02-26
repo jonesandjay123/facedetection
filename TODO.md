@@ -16,13 +16,16 @@ Current baselines (both near random on primate ReID):
 - ResNet50 (ImageNet): AUC 0.69, EER 36.3%
 - FaceNet (VGGFace2): AUC 0.61, EER 42.2%
 
-Next two to add (tells the full story: supervised vs face-specialized vs self-supervised):
-- [ ] **ArcFace (InsightFace)** — strongest human face ReID; tests if metric learning helps cross-species
-- [ ] **DINOv2** — self-supervised; expected to generalize better to novel domains
+Completed baselines (4 backbones tested 2026-02-25):
+- [x] **ResNet50** (ImageNet) — AUC 0.69 ✅
+- [x] **FaceNet** (VGGFace2) — AUC 0.61 ✅
+- [x] **ArcFace** (InsightFace) — AUC 0.55 ✅ (near random — specialization penalty!)
+- [x] **DINOv2** (self-supervised) — AUC 0.73 ✅ ⭐ Best performer
 
-Optional but valuable:
+Next backbones to explore:
 - [ ] CLIP ViT-B/16 — zero-shot generalization baseline
 - [ ] SphereFace — used in Deb et al. 2018 for lemur ReID
+- [ ] DINOv2 ViT-B/14 or ViT-L/14 — larger DINOv2 variants may improve further
 
 ## Priority C: Engineering Hygiene
 

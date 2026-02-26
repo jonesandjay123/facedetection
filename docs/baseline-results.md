@@ -4,21 +4,26 @@
 
 ## Baseline Results
 
-| Backbone | AUC | EER | d' (decidability) | Best Threshold |
-|----------|-----|-----|--------------------|----------------|
-| **ResNet50** (ImageNet) | 0.6884 | 36.3% | 0.673 | 0.624 |
-| **FaceNet** (VGGFace2) | 0.6141 | 42.2% | 0.407 | 0.751 |
+| Backbone | Training Data | Dim | AUC | EER | d' (decidability) | Best Threshold |
+|----------|--------------|-----|-----|-----|--------------------|----------------|
+| **DINOv2 ViT-S/14** ⭐ | Self-supervised (LVD-142M) | 384 | **0.7251** | **34.7%** | **0.802** | 0.732 |
+| **ResNet50** | Supervised (ImageNet) | 2048 | 0.6884 | 36.3% | 0.673 | 0.624 |
+| **FaceNet** | Human faces (VGGFace2) | 512 | 0.6141 | 42.2% | 0.407 | 0.751 |
+| **ArcFace** | Human faces (MS1MV2) | 512 | 0.5508 | 45.4% | 0.155 | 0.532 |
 
 ### Interpretation
 
-- **Both models perform poorly** — close to random chance (AUC=0.5) for individual chimpanzee identification
-- **ResNet50 > FaceNet**: Counter-intuitive but explainable — FaceNet is over-specialized for human facial geometry (interpupillary distance, nose bridge, mouth shape). These features don't transfer well to primate faces. ResNet50's generic visual features (texture, color patterns, shape) are actually more useful.
-- **Score distributions heavily overlap** (see figures), confirming low discriminative power
-- **These results establish a clear baseline** that domain-specific models should significantly improve upon
+- **All models struggle** — even the best (DINOv2) has AUC 0.73, far from production-grade
+- **Clear ranking**: Self-supervised > General supervised > Human face specialized
+- **DINOv2 wins** despite having the smallest embedding dimension (384-d). Its self-supervised training on diverse visual data produces features that generalize across species better than any supervised model.
+- **ArcFace is worst**: The most powerful human face model performs near random chance (AUC 0.55) on chimpanzees. Angular margin loss that excels at separating human identities creates harmful inductive bias for non-human faces.
+- **The "specialization penalty"**: More human-face-specific training → worse cross-species performance. ArcFace (0.55) < FaceNet (0.61) < ResNet50 (0.69) < DINOv2 (0.73).
 
 ### Key Insight
 
-The gap between "category recognition" (is this a chimpanzee?) and "individual recognition" (is this Fredy or Victor?) requires identity-discriminative features that general-purpose models don't learn. This validates the need for primate-specific or fine-tuned embeddings.
+The gap between "category recognition" (is this a chimpanzee?) and "individual recognition" (is this Fredy or Victor?) requires identity-discriminative features that general-purpose models don't learn. However, **self-supervised learning shows the most promise** — DINOv2 learns fine-grained visual distinctions without any labels, making it the best starting point for cross-species transfer.
+
+The "specialization penalty" finding is a strong research narrative: **human face expertise hurts primate face identification**. This validates the need for primate-specific fine-tuning rather than simply using bigger human face models.
 
 ---
 

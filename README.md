@@ -25,11 +25,17 @@ pip install -r requirements.txt
 The repo includes `data/demo_chimp_crops/` — 10 chimpanzees × 30 cropped face photos (300 images, ~22MB) from the CTai/CZoo dataset, ready to test out of the box:
 
 ```bash
-# ResNet50 backbone
+# ResNet50 — ImageNet general-purpose (2048-d)
 PYTHONPATH=src python3 -m primateid.run --crops data/demo_chimp_crops --backbone resnet50
 
-# FaceNet backbone
+# FaceNet — Human face specialized (512-d)
 PYTHONPATH=src python3 -m primateid.run --crops data/demo_chimp_crops --backbone facenet
+
+# ArcFace — SOTA human face recognition via InsightFace (512-d)
+PYTHONPATH=src python3 -m primateid.run --crops data/demo_chimp_crops --backbone arcface
+
+# DINOv2 — Self-supervised visual features (384-d) ⭐ Best performer
+PYTHONPATH=src python3 -m primateid.run --crops data/demo_chimp_crops --backbone dinov2
 ```
 
 ### Option B: Run with synthetic sample data
@@ -53,7 +59,7 @@ PYTHONPATH=src python3 -m primateid.run --crops data/your_dataset --backbone res
 
 ```
 --crops PATH      Path to crops directory (required)
---backbone STR    Embedding backbone: resnet50 | facenet (default: resnet50)
+--backbone STR    Embedding backbone: resnet50 | facenet | arcface | dinov2 (default: resnet50)
 --output PATH     Output directory (default: results/<backbone>_<timestamp>/)
 --device STR      Torch device (default: cpu)
 ```
@@ -100,6 +106,8 @@ Extracts individual primate regions via bounding-box crop or mask-based crop, pr
 Generates identity-discriminative feature vectors using multiple backbones:
 - **ResNet50** — ImageNet-pretrained, 2048-d embeddings
 - **FaceNet** — VGGFace2-pretrained InceptionResNetV1, 512-d embeddings
+- **ArcFace** — InsightFace buffalo_l (MS1MV2), 512-d embeddings with angular margin loss
+- **DINOv2** — Meta's self-supervised ViT-S/14, 384-d embeddings (no labels needed)
 
 All embeddings are L2-normalised so cosine similarity = dot product.
 
@@ -144,12 +152,18 @@ The demo chimpanzee data is provided for quick evaluation — clone the repo and
 
 ### Baseline Results (2026-02-25)
 
-| Backbone | AUC | EER | d' |
-|----------|-----|-----|-----|
-| ResNet50 (ImageNet) | 0.688 | 36.3% | 0.67 |
-| FaceNet (VGGFace2) | 0.614 | 42.2% | 0.41 |
+Tested on `data/demo_chimp_crops/` — 10 chimpanzees × 30 face crops (300 images):
 
-Both general-purpose models perform poorly on primate individual identification — validating the need for domain-specific embeddings. See [docs/baseline-results.md](docs/baseline-results.md) for full analysis, backbone candidates (ArcFace, DINOv2, CLIP, SphereFace), and next steps.
+| Backbone | Training | AUC | EER | d' | Verdict |
+|----------|----------|-----|-----|----|---------|
+| **DINOv2** ⭐ | Self-supervised (LVD-142M) | **0.725** | **34.7%** | **0.80** | Best — no labels needed |
+| ResNet50 | Supervised (ImageNet) | 0.688 | 36.3% | 0.67 | Generic features, decent |
+| FaceNet | Human faces (VGGFace2) | 0.614 | 42.2% | 0.41 | Over-specialized for humans |
+| ArcFace | Human faces (MS1MV2) | 0.551 | 45.4% | 0.16 | Too human-specific, near random |
+
+**Key finding**: Human face models (FaceNet, ArcFace) perform *worse* than general-purpose models on primate faces. Self-supervised learning (DINOv2) generalizes best across species — learned visual features without human-specific bias.
+
+See [docs/baseline-results.md](docs/baseline-results.md) for full analysis, additional backbone candidates, and next steps.
 
 ## Related Repos
 

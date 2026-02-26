@@ -25,11 +25,17 @@ pip install -r requirements.txt
 Repo 內附 `data/demo_chimp_crops/` — 10 隻黑猩猩 × 30 張裁切臉部照片（共 300 張，約 22MB），來自 CTai/CZoo 資料集，clone 後即可直接測試：
 
 ```bash
-# ResNet50 骨幹網路
+# ResNet50 — ImageNet 通用模型（2048 維）
 PYTHONPATH=src python3 -m primateid.run --crops data/demo_chimp_crops --backbone resnet50
 
-# FaceNet 骨幹網路
+# FaceNet — 人臉專用模型（512 維）
 PYTHONPATH=src python3 -m primateid.run --crops data/demo_chimp_crops --backbone facenet
+
+# ArcFace — SOTA 人臉辨識，InsightFace（512 維）
+PYTHONPATH=src python3 -m primateid.run --crops data/demo_chimp_crops --backbone arcface
+
+# DINOv2 — 自監督視覺特徵（384 維）⭐ 表現最佳
+PYTHONPATH=src python3 -m primateid.run --crops data/demo_chimp_crops --backbone dinov2
 ```
 
 ### 方案 B：使用合成測試資料
@@ -53,7 +59,7 @@ PYTHONPATH=src python3 -m primateid.run --crops data/your_dataset --backbone res
 
 ```
 --crops PATH      裁切圖片目錄路徑（必填）
---backbone STR    嵌入骨幹網路：resnet50 | facenet（預設：resnet50）
+--backbone STR    嵌入骨幹網路：resnet50 | facenet | arcface | dinov2（預設：resnet50）
 --output PATH     輸出目錄（預設：results/<backbone>_<timestamp>/）
 --device STR      Torch 裝置（預設：cpu）
 ```
@@ -100,6 +106,8 @@ data/crops/
 使用多種骨幹網路生成具身份鑑別力的特徵向量：
 - **ResNet50** — ImageNet 預訓練，2048 維嵌入
 - **FaceNet** — VGGFace2 預訓練 InceptionResNetV1，512 維嵌入
+- **ArcFace** — InsightFace buffalo_l（MS1MV2），512 維嵌入，角度間距損失
+- **DINOv2** — Meta 自監督 ViT-S/14，384 維嵌入（不需標籤）
 
 所有嵌入向量皆經 L2 正規化，使 cosine similarity = 內積。
 
@@ -144,12 +152,18 @@ Repo 內附兩組測試資料：
 
 ### 基線結果（2026-02-25）
 
-| 骨幹網路 | AUC | EER | d' |
-|----------|-----|-----|-----|
-| ResNet50（ImageNet）| 0.688 | 36.3% | 0.67 |
-| FaceNet（VGGFace2）| 0.614 | 42.2% | 0.41 |
+在 `data/demo_chimp_crops/` 上測試 — 10 隻黑猩猩 × 30 張臉部裁切（300 張）：
 
-兩個通用模型在靈長類個體辨識上都表現不佳 — 驗證了領域專用嵌入模型的必要性。完整分析、候選骨幹（ArcFace、DINOv2、CLIP、SphereFace）與下一步計畫見 [docs/baseline-results.zh-TW.md](docs/baseline-results.zh-TW.md)。
+| 骨幹網路 | 訓練方式 | AUC | EER | d' | 評語 |
+|----------|---------|-----|-----|----|------|
+| **DINOv2** ⭐ | 自監督（LVD-142M）| **0.725** | **34.7%** | **0.80** | 最佳 — 不需標籤 |
+| ResNet50 | 監督式（ImageNet）| 0.688 | 36.3% | 0.67 | 通用特徵，尚可 |
+| FaceNet | 人臉（VGGFace2）| 0.614 | 42.2% | 0.41 | 對人臉過度專精 |
+| ArcFace | 人臉（MS1MV2）| 0.551 | 45.4% | 0.16 | 太偏人臉，接近亂猜 |
+
+**核心發現**：人臉專用模型（FaceNet、ArcFace）在靈長類臉上表現*更差*。自監督學習（DINOv2）跨物種泛化最佳 — 學到的視覺特徵沒有人類特定偏差。
+
+完整分析、更多候選骨幹與下一步計畫見 [docs/baseline-results.zh-TW.md](docs/baseline-results.zh-TW.md)。
 
 ## 相關專案
 
